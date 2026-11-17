@@ -4,16 +4,11 @@
 
 :root {
   color-scheme: light;
-  --ink: #102a43;
-  --navy: #0b1f33;
-  --accent: #f5c451;
-  --mist: #f4f7fb;
 }
 
 body {
-  @apply bg-slate-100 text-slate-900 antialiased;
-  background: linear-gradient(135deg, #eef5ff 0%, #f8fbff 52%, #edf4ff 100%);
-  font-family: var(--font-bricolage-grotesque), sans-serif;
+  @apply bg-page text-slate-900 antialiased font-sans;
+  background-image: linear-gradient(135deg, #eef5ff 0%, #f8fbff 52%, #edf4ff 100%);
 }
 
 button,
@@ -24,24 +19,19 @@ select {
 
 @layer components {
   .app-surface {
-    @apply rounded-2xl border border-[#d6e1f1] bg-white/95 shadow-[0_8px_24px_rgba(27,65,112,.08)];
+    @apply rounded-2xl border border-[#d6e1f1] bg-white/95 shadow-card;
   }
 
   .admin-sidebar {
-    background: linear-gradient(180deg, #092a5a 0%, #062044 100%);
+    @apply bg-sidebar;
   }
 
   .hero-fishport {
-    background:
-      linear-gradient(90deg, rgba(4, 48, 101, .96), rgba(11, 83, 147, .72)),
-      radial-gradient(circle at 75% 30%, #55b4dd 0 12%, transparent 13%),
-      linear-gradient(135deg, #1675b7 0%, #6cc5e9 48%, #0b427d 100%);
+    @apply bg-hero;
   }
 
   .scanner-frame {
-    background:
-      linear-gradient(rgba(7, 37, 78, .62), rgba(7, 37, 78, .62)),
-      linear-gradient(135deg, #83b9dc, #2e6a99);
+    @apply bg-scanner;
   }
 
   .page-title {
