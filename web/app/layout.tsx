@@ -3,7 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "../components/AuthProvider";
 
 export const metadata: Metadata = {
-  title: "ParkFlow Parking Management",
+  title: "Mercedes Municipal Fishport Parking System",
   description: "Reusable QR card parking management system",
 };
 

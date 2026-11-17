@@ -51,7 +51,7 @@ export default function CardsPage() {
     }));
     const windowRef = window.open("", "_blank");
     if (!windowRef) return;
-    windowRef.document.write(`<title>ParkFlow QR cards</title><style>body{font-family:Arial;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:20px}article{border:1px dashed #555;padding:10px;text-align:center;break-inside:avoid}img{width:140px;height:140px;display:block;margin:auto}strong{display:block;font:700 18px monospace;margin-top:8px}</style>${html.join("")}`);
+    windowRef.document.write(`<title>Mercedes Municipal Fishport Parking System QR cards</title><style>body{font-family:Arial;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:20px}article{border:1px dashed #555;padding:10px;text-align:center;break-inside:avoid}img{width:140px;height:140px;display:block;margin:auto}strong{display:block;font:700 18px monospace;margin-top:8px}</style>${html.join("")}`);
     windowRef.document.close(); windowRef.focus(); windowRef.print();
   }
 

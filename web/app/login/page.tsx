@@ -19,7 +19,7 @@ export default function LoginPage() {
 
   return <main className="flex min-h-screen items-center justify-center p-4">
     <form onSubmit={submit} className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg">
-      <h1 className="text-3xl font-black text-ink">ParkFlow</h1><p className="mb-6 text-slate-500">Parking management login</p>
+      <h1 className="text-3xl font-black text-ink">Mercedes Municipal Fishport Parking System</h1><p className="mb-6 text-slate-500">Parking management login</p>
       {error && <p className="mb-4 rounded-lg bg-red-100 p-3 text-red-700">{error}</p>}
       <label className="mb-4 block font-bold">Username<input value={username} onChange={e => setUsername(e.target.value)} className="mt-1 w-full rounded-xl border p-3" required /></label>
       <label className="mb-5 block font-bold">Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} className="mt-1 w-full rounded-xl border p-3" required /></label>

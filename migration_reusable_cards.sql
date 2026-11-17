@@ -1,5 +1,5 @@
--- ParkFlow reusable-card migration.
--- Run against the existing ParkFlow database. This migration does not delete
+-- Mercedes Municipal Fishport Parking System reusable-card migration.
+-- Run against the existing parking database. This migration does not delete
 -- existing users, rates, tickets, or reports.
 
 CREATE TABLE IF NOT EXISTS cards (

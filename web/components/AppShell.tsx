@@ -18,7 +18,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen">
       <header className="no-print bg-ink text-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4">
-          <Link href="/dashboard" className="text-xl font-black">ParkFlow</Link>
+          <Link href="/dashboard" className="text-xl font-black">Mercedes Municipal Fishport Parking System</Link>
           <nav className="flex flex-wrap gap-2">
             {links.map(([href, label]) => (
               <Link key={href} href={href} className={`rounded-lg px-3 py-2 text-sm font-bold ${pathname === href ? "bg-accent text-ink" : "bg-white/10"}`}>{label}</Link>
