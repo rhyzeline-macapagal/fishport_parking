@@ -463,7 +463,7 @@ try {
         if ($where !== []) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
-        $sql .= ' ORDER BY t.entry_time DESC LIMIT 500';
+        $sql .= ' ORDER BY t.entry_time DESC LIMIT 100';
         $statement = $pdo->prepare($sql);
         $statement->execute($params);
         respond(['transactions' => $statement->fetchAll()]);
