@@ -1,0 +1,11 @@
+# Secrets and local configuration
+api/config.php
+web/.env.local
+
+# Dependencies and generated output
+web/node_modules/
+web/.next/
+
+# Local logs and editor files
+*.log
+.vscode/
