@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { useAuth } from "./AuthProvider";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [logoutOpen, setLogoutOpen] = useState(false);
   const links = user?.role === "admin"
     ? [["/dashboard", "Dashboard"], ["/transactions", "Transactions"], ["/cards", "Cards"], ["/settings", "Settings"]]
     : user?.role === "guard_entrance"
@@ -23,7 +25,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <nav className="mt-8 space-y-2">
           {links.map(([href, label]) => <Link key={href} href={href} className={`block rounded-xl px-4 py-3 text-sm font-bold transition ${pathname === href ? "bg-blue-600 text-white shadow-lg" : "text-blue-100 hover:bg-white/10"}`}>{label}</Link>)}
         </nav>
-        <button onClick={() => { logout(); router.push("/login"); }} className="mt-10 w-full border-t border-white/20 px-4 pt-5 text-left text-sm font-bold text-blue-100">↪ Log out</button>
+        <button onClick={() => setLogoutOpen(true)} className="mt-10 w-full border-t border-white/20 px-4 pt-5 text-left text-sm font-bold text-blue-100">↪ Log out</button>
       </aside>}
       <div className="min-w-0 flex-1">
         <header className="no-print border-b border-slate-200 bg-white">
@@ -34,7 +36,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <div className="flex items-center gap-2">
               <span className="hidden rounded-full bg-slate-100 px-3 py-2 text-xs font-bold text-slate-600 sm:inline">{user?.name}</span>
-              {!isAdmin && <button onClick={() => { logout(); router.push("/login"); }} className="rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-700">Log out</button>}
+              {!isAdmin && <button onClick={() => setLogoutOpen(true)} className="rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-700">Log out</button>}
             </div>
           </div>
           {!isAdmin && <nav className="mx-auto hidden max-w-7xl gap-2 overflow-x-auto px-4 pb-3 sm:flex lg:px-8">
@@ -46,6 +48,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {links.map(([href, label]) => <Link key={href} href={href} className={`rounded-xl px-2 py-3 text-center text-xs font-black ${pathname === href ? "bg-accent text-ink" : "text-slate-500"}`}>{label}</Link>)}
         </nav>}
       </div>
+      {logoutOpen && <div className="no-print fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" role="dialog" aria-modal="true" aria-labelledby="logout-title">
+        <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-xl text-red-600">↪</div>
+          <h2 id="logout-title" className="text-xl font-black text-ink">Are you sure you want to log out?</h2>
+          <p className="mt-2 text-sm text-slate-500">You will need to sign in again to access the parking system.</p>
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <button onClick={() => setLogoutOpen(false)} className="min-h-12 rounded-xl border border-slate-300 px-4 py-3 font-bold text-slate-700">Cancel</button>
+            <button onClick={() => { logout(); setLogoutOpen(false); router.push("/login"); }} className="min-h-12 rounded-xl bg-red-600 px-4 py-3 font-bold text-white">Log out</button>
+          </div>
+        </div>
+      </div>}
     </div>
   );
 }
