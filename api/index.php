@@ -16,11 +16,17 @@ if (!is_file($configFile)) {
 
 $config = require $configFile;
 date_default_timezone_set($config['timezone'] ?? 'Asia/Manila');
+
+$allowedOrigins = $config['frontend_origins'] ?? [];
+$requestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: ' . ($config['frontend_origin'] ?? ''));
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-header('Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS');
 header('Vary: Origin');
+if ($requestOrigin !== '' && in_array($requestOrigin, $allowedOrigins, true)) {
+    header('Access-Control-Allow-Origin: ' . $requestOrigin);
+    header('Access-Control-Allow-Headers: Content-Type, Authorization');
+    header('Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS');
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);

@@ -23,5 +23,5 @@ export function QrScanner({ onScan }: { onScan: (value: string) => void }) {
     return () => { scanner?.stop().catch(() => undefined); scanner?.clear(); };
   }, [onScan]);
 
-  return <div><div id={id.current} className="overflow-hidden rounded-xl bg-slate-900" />{error && <p className="mt-2 text-sm text-red-600">{error}</p>}</div>;
+  return <div><div id={id.current} className="scanner-frame min-h-44 overflow-hidden rounded-xl border-4 border-white/80 shadow-inner" />{error && <p className="mt-2 text-sm text-red-600">{error}</p>}</div>;
 }

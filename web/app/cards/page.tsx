@@ -6,54 +6,11 @@ import { Card, apiFetch } from "../../lib/api";
 import { Protected } from "../../components/Protected";
 
 export default function CardsPage() {
-  const [cards, setCards] = useState<Card[]>([]);
-  const [count, setCount] = useState(100);
-  const [prefix, setPrefix] = useState("PF-");
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
-
-  async function load() {
-    try {
-      setCards((await apiFetch<{ cards: Card[] }>("/cards")).cards);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not load cards.");
-    }
-  }
+  const [cards, setCards] = useState<Card[]>([]); const [count, setCount] = useState(100); const [prefix, setPrefix] = useState("PF-"); const [error, setError] = useState(""); const [message, setMessage] = useState("");
+  async function load() { try { setCards((await apiFetch<{ cards: Card[] }>("/cards")).cards); } catch (e) { setError(e instanceof Error ? e.message : "Could not load cards."); } }
   useEffect(() => { load(); }, []);
-
-  async function generate(event: React.FormEvent) {
-    event.preventDefault();
-    setError(""); setMessage("");
-    try {
-      const result = await apiFetch<{ cards: Card[] }>("/cards", { method: "POST", body: JSON.stringify({ count, prefix }) });
-      await load();
-      setMessage(`${result.cards.length} cards generated.`);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not generate cards.");
-    }
-  }
-
-  async function changeStatus(card: Card) {
-    const status = card.status === "disabled" ? "available" : "disabled";
-    try {
-      const result = await apiFetch<{ card: Card }>(`/cards/${encodeURIComponent(card.card_code)}`, { method: "PUT", body: JSON.stringify({ status }) });
-      setCards(cards.map(item => item.id === card.id ? result.card : item));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not update card.");
-    }
-  }
-
-  async function printSheet() {
-    const printable = cards.filter(card => card.status !== "lost");
-    const html = await Promise.all(printable.map(async card => {
-      const qr = await QRCode.toDataURL(card.card_code, { margin: 1, width: 140 });
-      return `<article><img src="${qr}" alt="${card.card_code}"><strong>${card.card_code}</strong></article>`;
-    }));
-    const windowRef = window.open("", "_blank");
-    if (!windowRef) return;
-    windowRef.document.write(`<title>Mercedes Municipal Fishport Parking System QR cards</title><style>body{font-family:Arial;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:20px}article{border:1px dashed #555;padding:10px;text-align:center;break-inside:avoid}img{width:140px;height:140px;display:block;margin:auto}strong{display:block;font:700 18px monospace;margin-top:8px}</style>${html.join("")}`);
-    windowRef.document.close(); windowRef.focus(); windowRef.print();
-  }
-
-  return <Protected roles={["admin"]}><div className="flex flex-wrap items-center justify-between gap-3"><h1 className="text-3xl font-black">Cards</h1><button onClick={printSheet} className="rounded-xl bg-accent px-4 py-3 font-bold">Print QR sheet</button></div>{message && <p className="mt-4 rounded-lg bg-green-100 p-3 text-green-700">{message}</p>}{error && <p className="mt-4 rounded-lg bg-red-100 p-3 text-red-700">{error}</p>}<form onSubmit={generate} className="mt-6 grid gap-3 rounded-2xl bg-white p-5 shadow-sm sm:grid-cols-3"><label className="font-bold">Batch size<input type="number" min="1" max="1000" value={count} onChange={e => setCount(Number(e.target.value))} className="mt-1 w-full rounded-xl border p-3" /></label><label className="font-bold">Prefix<input value={prefix} onChange={e => setPrefix(e.target.value.toUpperCase())} className="mt-1 w-full rounded-xl border p-3 font-mono" /></label><button className="self-end rounded-xl bg-ink py-3 font-bold text-white">Generate cards</button></form><section className="mt-6 overflow-x-auto rounded-2xl bg-white p-5 shadow-sm"><table className="w-full min-w-[560px] text-left text-sm"><thead><tr className="border-b"><th className="p-2">Card code</th><th className="p-2">Status</th><th className="p-2">Created</th><th className="p-2">Action</th></tr></thead><tbody>{cards.map(card => <tr key={card.id} className="border-b"><td className="p-2 font-mono font-bold">{card.card_code}</td><td className="p-2 uppercase">{card.status}</td><td className="p-2">{card.created_at || "—"}</td><td className="p-2">{(card.status === "available" || card.status === "disabled") && <button onClick={() => changeStatus(card)} className="rounded-lg bg-slate-200 px-3 py-2 font-bold">{card.status === "disabled" ? "Enable" : "Disable"}</button>}</td></tr>)}</tbody></table></section></Protected>;
+  async function generate(event: React.FormEvent) { event.preventDefault(); setError(""); setMessage(""); try { const result = await apiFetch<{ cards: Card[] }>("/cards", { method: "POST", body: JSON.stringify({ count, prefix }) }); await load(); setMessage(`${result.cards.length} cards generated.`); } catch (e) { setError(e instanceof Error ? e.message : "Could not generate cards."); } }
+  async function changeStatus(card: Card) { try { const status = card.status === "disabled" ? "available" : "disabled"; const result = await apiFetch<{ card: Card }>(`/cards/${encodeURIComponent(card.card_code)}`, { method: "PUT", body: JSON.stringify({ status }) }); setCards(cards.map(item => item.id === card.id ? result.card : item)); } catch (e) { setError(e instanceof Error ? e.message : "Could not update card."); } }
+  async function printSheet() { const html = await Promise.all(cards.filter(card => card.status !== "lost").map(async card => `<article><img src="${await QRCode.toDataURL(card.card_code, { margin: 1, width: 140 })}"><strong>${card.card_code}</strong></article>`)); const popup = window.open("", "_blank"); if (!popup) return; popup.document.write(`<title>QR Cards</title><style>body{font-family:Arial;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:20px}article{border:1px dashed #555;padding:10px;text-align:center}img{width:140px}strong{display:block;font:700 18px monospace;margin-top:8px}</style>${html.join("")}`); popup.document.close(); popup.print(); }
+  return <Protected roles={["admin"]}><div className="space-y-6"><div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-sm font-semibold text-slate-500">Generate, manage and monitor QR cards.</p><h1 className="page-title">Cards Management</h1></div><button onClick={printSheet} className="accent-button">＋ Print QR Cards</button></div>{message && <p className="rounded-xl bg-emerald-50 p-3 font-semibold text-emerald-700">{message}</p>}{error && <p className="rounded-xl bg-red-50 p-3 font-semibold text-red-700">{error}</p>}<section className="app-surface grid gap-5 p-5 lg:grid-cols-[1fr_auto]"><form onSubmit={generate}><h2 className="mb-4 text-xl font-black">Generate New Cards</h2><div className="grid gap-3 sm:grid-cols-3"><label className="field-label">Quantity<input type="number" min="1" max="1000" value={count} onChange={e => setCount(Number(e.target.value))} className="input-control" /></label><label className="field-label">Prefix<input value={prefix} onChange={e => setPrefix(e.target.value.toUpperCase())} className="input-control font-mono" /></label><button className="primary-button self-end">Generate</button></div></form><div className="rounded-xl bg-blue-50 p-5 text-center text-sm font-semibold text-blue-900">▦<br />Each QR card contains only the card code<br /><span className="font-mono">(e.g. PF-0001).</span></div></section><section className="app-surface overflow-hidden p-5"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-black">Cards List</h2><div className="flex gap-2"><input placeholder="⌕ Search card code..." className="rounded-lg border p-2 text-sm" /><select className="rounded-lg border p-2 text-sm"><option>All Statuses</option></select></div></div><div className="overflow-x-auto"><table className="w-full min-w-[650px] text-left text-sm"><thead className="bg-blue-50 text-xs uppercase text-slate-500"><tr><th className="p-3">Card Code</th><th className="p-3">Status</th><th className="p-3">Created Date</th><th className="p-3">Action</th></tr></thead><tbody>{cards.map(card => <tr key={card.id} className="border-b border-slate-100"><td className="p-3 font-mono font-bold">{card.card_code}</td><td className="p-3"><span className={`font-semibold ${card.status === "available" ? "text-emerald-600" : card.status === "lost" ? "text-red-600" : "text-slate-500"}`}>● {card.status.replace("_", " ")}</span></td><td className="p-3">{card.created_at || "—"}</td><td className="p-3">{(card.status === "available" || card.status === "disabled") && <button onClick={() => changeStatus(card)} className="rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700">{card.status === "disabled" ? "Enable" : "Disable"}</button>}</td></tr>)}</tbody></table></div></section></div></Protected>;
 }

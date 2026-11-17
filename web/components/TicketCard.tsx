@@ -4,9 +4,10 @@ import { Ticket, formatDate } from "../lib/api";
 
 export function TicketCard({ ticket, receipt = false }: { ticket: Ticket; receipt?: boolean }) {
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm print:shadow-none">
+    <section className="app-surface overflow-hidden p-5 print:shadow-none">
       <div className="flex flex-col items-center gap-3 text-center">
-        <p className="text-sm font-bold uppercase tracking-widest text-slate-500">{receipt ? "Parking receipt" : "Parking ticket"}</p>
+        <div className="mb-2 h-12 w-12 rounded-full bg-emerald-100 p-3 text-emerald-600">✓</div>
+        <p className="text-sm font-bold uppercase tracking-widest text-slate-500">{receipt ? "Payment successful" : "Entry recorded"}</p>
         <p className="text-3xl font-black">{ticket.plate_no}</p>
         <p className="font-mono text-lg font-bold">{ticket.card_code || "Legacy ticket"}</p>
       </div>

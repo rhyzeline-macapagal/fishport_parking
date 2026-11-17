@@ -17,13 +17,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isAdmin = user?.role === "admin";
   return (
     <div className={`min-h-screen ${isAdmin ? "lg:flex" : ""}`}>
-      {isAdmin && <aside className="no-print hidden w-72 shrink-0 border-r border-slate-200 bg-white p-6 lg:block">
-        <Link href="/dashboard" className="block text-lg font-black leading-tight text-ink">Mercedes Municipal<br />Fishport Parking</Link>
-        <p className="mt-2 text-xs font-bold uppercase tracking-widest text-slate-400">Administration</p>
+      {isAdmin && <aside className="admin-sidebar no-print hidden w-64 shrink-0 p-5 text-white lg:block">
+        <Link href="/dashboard" className="block border-b border-white/20 pb-5 text-lg font-black leading-tight">Mercedes<br />Municipal Fishport<br /><span className="text-sm font-medium text-blue-200">Parking System</span></Link>
+        <p className="mt-6 text-[10px] font-bold uppercase tracking-[.2em] text-blue-200">Main menu</p>
         <nav className="mt-8 space-y-2">
-          {links.map(([href, label]) => <Link key={href} href={href} className={`block rounded-xl px-4 py-3 text-sm font-bold transition ${pathname === href ? "bg-accent text-ink" : "text-slate-600 hover:bg-slate-100"}`}>{label}</Link>)}
+          {links.map(([href, label]) => <Link key={href} href={href} className={`block rounded-xl px-4 py-3 text-sm font-bold transition ${pathname === href ? "bg-blue-600 text-white shadow-lg" : "text-blue-100 hover:bg-white/10"}`}>{label}</Link>)}
         </nav>
-        <button onClick={() => { logout(); router.push("/login"); }} className="mt-10 w-full rounded-xl bg-red-50 px-4 py-3 text-left text-sm font-bold text-red-700">Log out</button>
+        <button onClick={() => { logout(); router.push("/login"); }} className="mt-10 w-full border-t border-white/20 px-4 pt-5 text-left text-sm font-bold text-blue-100">↪ Log out</button>
       </aside>}
       <div className="min-w-0 flex-1">
         <header className="no-print border-b border-slate-200 bg-white">
