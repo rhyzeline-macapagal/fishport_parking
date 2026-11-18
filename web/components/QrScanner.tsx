@@ -7,40 +7,67 @@ export function QrScanner({ onScan }: { onScan: (value: string) => void }) {
   const [error, setError] = useState("");
   const [scanning, setScanning] = useState(true);
 
+  function showScannerError(message: string) {
+    setScanning(false);
+    setError(message);
+  }
+
   useEffect(() => {
     let active = true;
     let handled = false;
     let scanner: { stop: () => Promise<void>; clear: () => void } | undefined;
-    import("html5-qrcode").then(async ({ Html5Qrcode }) => {
-      if (!active) return;
-      const instance = new Html5Qrcode(id.current);
-      scanner = instance;
-      try {
-        await instance.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 240, height: 240 } }, (text) => {
-          if (!active || handled) return;
-          handled = true;
-          setScanning(false);
-          onScan(text);
-          window.setTimeout(() => instance.stop().catch(() => undefined), 0);
-        }, () => undefined);
-      } catch {
+    import("html5-qrcode")
+      .then(async ({ Html5Qrcode }) => {
         if (!active) return;
-        setScanning(false);
-        setError("Camera unavailable. Use manual card-code entry below.");
-      }
-    });
+        const element = document.getElementById(id.current);
+        if (!element) return;
+        const instance = new Html5Qrcode(id.current);
+        scanner = instance;
+        try {
+          await instance.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 240, height: 240 } }, (text) => {
+            if (!active || handled) return;
+            handled = true;
+            setScanning(false);
+            try {
+              onScan(text);
+            } catch (scanError) {
+              showScannerError(
+                scanError instanceof Error
+                  ? `QR scan failed: ${scanError.message}`
+                  : "The QR code could not be processed. Try scanning again."
+              );
+            }
+          }, () => undefined);
+        } catch {
+          if (!active) return;
+          showScannerError("Camera unavailable. Use manual card-code entry below.");
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        showScannerError("QR scanner could not load. Use manual card-code entry below.");
+      });
     return () => {
       active = false;
       if (!scanner) return;
-      scanner.stop()
-        .catch(() => undefined)
-        .finally(() => {
-          try {
-            scanner?.clear();
-          } catch {
-            // The scanner may already be cleared during a route transition.
-          }
-        });
+      try {
+        const stopping = scanner.stop();
+        stopping
+          .catch(() => undefined)
+          .finally(() => {
+            try {
+              scanner?.clear();
+            } catch {
+              // The scanner may already be cleared during a route transition.
+            }
+          });
+      } catch {
+        try {
+          scanner.clear();
+        } catch {
+          // The scanner may already be cleared during a route transition.
+        }
+      }
     };
   }, [onScan]);
 
