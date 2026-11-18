@@ -61,7 +61,7 @@ export default function EntrancePage() {
   }
   return <Protected roles={["guard_entrance", "admin"]}>
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,.9fr)]">
-      <form onSubmit={submit} className="app-surface p-5 sm:p-7">
+      {!ticket && <form onSubmit={submit} className="app-surface p-5 sm:p-7">
         <div className="mb-6">
           <p className="text-xs font-black uppercase tracking-widest text-accent">Entrance lane</p>
           <h1 className="page-title mt-1">Vehicle entry</h1>
@@ -78,8 +78,8 @@ export default function EntrancePage() {
         <label className="field-label">Plate number<input value={plate} onChange={e => setPlate(e.target.value.toUpperCase())} className="input-control text-xl uppercase" maxLength={20} required /></label>
         <label className="field-label">Vehicle type<select value={vehicleType} onChange={e => setVehicleType(e.target.value)} className="input-control"><option>Car</option><option>Motorcycle</option><option>Van</option></select></label>
         <button disabled={loading || !cardCode || ticket !== null} className="guard-action bg-ink text-lg text-white">{loading ? "Assigning…" : "Assign card"}</button>
-      </form>
-      {ticket ? <div className="space-y-4"><TicketCard ticket={ticket} /><button type="button" onClick={startAnotherTransaction} className="guard-action bg-blue-600 text-lg text-white">＋ Scan another QR</button></div> : <div className="app-surface flex min-h-48 items-center justify-center border-dashed p-8 text-center text-slate-500">Scan a reusable card, then give it to the driver.</div>}
+      </form>}
+      {ticket ? <div className="mx-auto w-full max-w-md space-y-4"><TicketCard ticket={ticket} /><button type="button" onClick={startAnotherTransaction} className="guard-action bg-blue-600 text-lg text-white">＋ Scan another QR</button></div> : !ticket && <div className="app-surface flex min-h-48 items-center justify-center border-dashed p-8 text-center text-slate-500">Scan a reusable card, then give it to the driver.</div>}
     </div>
   </Protected>;
 }

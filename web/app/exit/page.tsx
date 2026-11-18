@@ -67,7 +67,7 @@ export default function ExitPage() {
   }
   return <Protected roles={["guard_exit", "admin"]}>
     <div className="grid gap-5 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)]">
-      <section className="app-surface space-y-5 p-5 sm:p-7">
+      {ticket?.status !== "paid" && <section className="app-surface space-y-5 p-5 sm:p-7">
         <div><p className="text-xs font-black uppercase tracking-widest text-accent">Exit lane</p><h1 className="page-title mt-1">Vehicle exit</h1><p className="mt-1 text-sm text-slate-500">Scan the card to calculate the current amount due.</p></div>
         {error && <p className="rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700">{error}</p>}
         {!cardLocked && <QrScanner key={scannerKey} onScan={lookup} />}
@@ -80,8 +80,8 @@ export default function ExitPage() {
           </label>
           <button onClick={() => lookup(cardCode)} disabled={loading || !cardCode || cardLocked} className="guard-action bg-ink text-white">Look up card</button>
         </div>
-      </section>
-      {ticket && billing ? <section className="app-surface p-5 sm:p-7">
+      </section>}
+      {ticket && ticket.status === "paid" ? <div className="mx-auto w-full max-w-md space-y-4"><TicketCard ticket={ticket} receipt /><button type="button" onClick={startNextTransaction} className="guard-action bg-blue-600 text-lg text-white">＋ Scan next card</button></div> : ticket && billing ? <section className="app-surface p-5 sm:p-7">
         <h2 className="mb-5 text-2xl font-black text-ink">Billing summary</h2>
         <dl className="grid grid-cols-2 gap-4 text-sm">
           <div><dt className="text-slate-500">Card</dt><dd className="font-bold">{ticket.card_code}</dd></div>
@@ -94,8 +94,7 @@ export default function ExitPage() {
         <p className="my-6 rounded-xl bg-slate-100 p-4 text-center text-sm font-bold">{billing.computation}</p>
         <p className="text-center text-5xl font-black text-ink">₱{billing.total.toFixed(2)}</p>
         {ticket.status === "active" && <button onClick={pay} disabled={loading} className="guard-action mt-6 bg-green-600 text-lg text-white">{loading ? "Processing…" : "Confirm cash payment"}</button>}
-        {ticket.status === "paid" && <div className="mt-6 space-y-4"><TicketCard ticket={ticket} receipt /><button type="button" onClick={startNextTransaction} className="guard-action bg-blue-600 text-lg text-white">＋ Scan next card</button></div>}
-      </section> : <div className="app-surface flex min-h-48 items-center justify-center border-dashed p-8 text-center text-slate-500">Scan a card or enter its code manually.</div>}
+      </section> : ticket?.status !== "paid" ? <div className="app-surface flex min-h-48 items-center justify-center border-dashed p-8 text-center text-slate-500">Scan a card or enter its code manually.</div> : null}
     </div>
   </Protected>;
 }
