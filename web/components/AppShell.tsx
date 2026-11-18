@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "./AuthProvider";
@@ -20,15 +21,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className={`min-h-screen ${isAdmin ? "lg:flex" : ""}`}>
       {isAdmin && <aside className="admin-sidebar no-print hidden w-64 shrink-0 p-5 text-white lg:block">
-        <Link href="/dashboard" className="block border-b border-white/20 pb-5 text-lg font-black leading-tight">Mercedes<br />Municipal Fishport<br /><span className="text-sm font-medium text-blue-200">Parking System</span></Link>
+        <Link href="/dashboard" className="flex items-center gap-3 border-b border-white/20 pb-5">
+          <Image src="/images/mercedes_logo.jpg" alt="Mercedes logo" width={56} height={56} className="h-14 w-14 shrink-0 rounded-full object-cover" />
+          <span className="text-lg font-black leading-tight">Mercedes<br />Municipal Fishport<br /><span className="text-sm font-medium text-blue-200">Parking System</span></span>
+        </Link>
         <p className="mt-6 text-[10px] font-bold uppercase tracking-[.2em] text-blue-200">Main menu</p>
         <nav className="mt-8 space-y-2">
-          {links.map(([href, label]) => <Link key={href} href={href} className={`block rounded-xl px-4 py-3 text-sm font-bold transition ${pathname === href ? "bg-blue-600 text-white shadow-lg" : "text-blue-100 hover:bg-white/10"}`}>{label}</Link>)}
+          {links.map(([href, label]) => <Link key={href} href={href} className={`block rounded-xl border px-4 py-3 text-sm font-bold transition ${pathname === href ? "border-white/20 bg-white/20 text-white shadow-lg backdrop-blur-lg" : "border-transparent text-blue-100 hover:border-white/10 hover:bg-white/10"}`}>{label}</Link>)}
         </nav>
         <button onClick={() => setLogoutOpen(true)} className="mt-10 w-full border-t border-white/20 px-4 pt-5 text-left text-sm font-bold text-blue-100">↪ Log out</button>
       </aside>}
       <div className="min-w-0 flex-1">
-        <header className="no-print border-b border-slate-200 bg-white">
+        <header className="no-print sticky top-0 z-30 border-b border-white/60 bg-white/70 backdrop-blur-xl">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-4 lg:px-8">
             <div className="min-w-0">
               <Link href="/dashboard" className="block truncate text-base font-black text-ink sm:text-lg">{isAdmin ? "Mercedes Municipal Fishport Parking System" : "Fishport Parking"}</Link>
@@ -48,8 +52,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {links.map(([href, label]) => <Link key={href} href={href} className={`rounded-xl px-2 py-3 text-center text-xs font-black ${pathname === href ? "bg-accent text-ink" : "text-slate-500"}`}>{label}</Link>)}
         </nav>}
       </div>
-      {logoutOpen && <div className="no-print fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" role="dialog" aria-modal="true" aria-labelledby="logout-title">
-        <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+      {logoutOpen && <div className="no-print fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="logout-title">
+        <div className="w-full max-w-sm rounded-3xl border border-white/70 bg-white/75 p-6 shadow-2xl backdrop-blur-2xl">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-xl text-red-600">↪</div>
           <h2 id="logout-title" className="text-xl font-black text-ink">Are you sure you want to log out?</h2>
           <p className="mt-2 text-sm text-slate-500">You will need to sign in again to access the parking system.</p>

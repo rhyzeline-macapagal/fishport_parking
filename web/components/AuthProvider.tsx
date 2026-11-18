@@ -18,7 +18,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem("parking_user");
-    if (stored) setUser(JSON.parse(stored));
+    const token = localStorage.getItem("parking_token");
+    if (stored && token) {
+      try {
+        setUser(JSON.parse(stored) as User);
+      } catch {
+        localStorage.removeItem("parking_user");
+        localStorage.removeItem("parking_token");
+      }
+    } else {
+      localStorage.removeItem("parking_user");
+      localStorage.removeItem("parking_token");
+    }
     setLoading(false);
   }, []);
 

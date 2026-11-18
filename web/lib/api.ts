@@ -52,5 +52,20 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
 }
 
 export function formatDate(value: string | null): string {
-  return value ? new Date(value.replace(" ", "T") + (value.includes("Z") ? "" : "+08:00")).toLocaleString() : "—";
+  if (!value) return "—";
+  const isoValue = value.includes("T") || value.includes("Z")
+    ? value
+    : value.replace(" ", "T") + "+08:00";
+  const date = new Date(isoValue);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  }).format(date);
 }
