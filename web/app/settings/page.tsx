@@ -10,8 +10,92 @@ const rateFields = ["grace_minutes", "first_hours", "first_hours_rate", "succeed
 
 export default function SettingsPage() {
   const [rates, setRates] = useState<Rate[]>([]); const [users, setUsers] = useState<User[]>([]); const [message, setMessage] = useState(""); const [error, setError] = useState(""); const [newUser, setNewUser] = useState({ name: "", username: "", password: "", role: "guard_entrance" });
+  const [showPassword, setShowPassword] = useState(false);
+  function generateUsername(name: string) {
+    const words = name.trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return "";
+    if (words.length === 1) return words[0].toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 20);
+    const firstInitial = words[0][0].toLowerCase();
+    const remainder = words.slice(1).join("").toLowerCase().replace(/[^a-z0-9]/g, "");
+    return `${firstInitial}${remainder}`.slice(0, 30);
+  }
   useEffect(() => { Promise.all([apiFetch<{ rates: Rate[] }>("/rates"), apiFetch<{ users: User[] }>("/users")]).then(([a, b]) => { setRates(a.rates); setUsers(b.users); }).catch(e => setError(e instanceof Error ? e.message : "Could not load settings.")); }, []);
   async function save(rate: Rate) { try { await apiFetch("/rates", { method: "PUT", body: JSON.stringify(rate) }); setMessage(`${rate.vehicle_type} rates saved.`); } catch (e) { setError(e instanceof Error ? e.message : "Could not save rates."); } }
-  async function createUser(event: React.FormEvent) { event.preventDefault(); try { const result = await apiFetch<{ user: User }>("/users", { method: "POST", body: JSON.stringify(newUser) }); setUsers([...users, result.user]); setNewUser({ name: "", username: "", password: "", role: "guard_entrance" }); setMessage("User created."); } catch (e) { setError(e instanceof Error ? e.message : "Could not create user."); } }
-  return <Protected roles={["admin"]}><div className="space-y-6"><div><p className="text-sm font-semibold text-slate-500">Configure pricing and staff access.</p><h1 className="page-title">Settings</h1></div>{message && <p className="rounded-xl bg-emerald-50 p-3 font-semibold text-emerald-700">{message}</p>}{error && <p className="rounded-xl bg-red-50 p-3 font-semibold text-red-700">{error}</p>}<div className="grid gap-5 md:grid-cols-3">{rates.map(rate => <form key={rate.vehicle_type} onSubmit={e => { e.preventDefault(); save(rate); }} className="app-surface p-5"><h2 className="mb-4 text-xl font-black text-ink">{rate.vehicle_type} Rates</h2>{rateFields.map(field => <label key={field} className="field-label text-xs uppercase">{field.replaceAll("_", " ")}<input type="number" step="0.01" value={rate[field]} onChange={e => setRates(rates.map(item => item.id === rate.id ? { ...item, [field]: Number(e.target.value) } : item))} className="input-control" /></label>)}<button className="primary-button w-full">Save rates</button></form>)}</div><section className="grid gap-5 lg:grid-cols-2"><form onSubmit={createUser} className="app-surface p-5"><h2 className="mb-4 text-xl font-black text-ink">Add User</h2>{(["name", "username", "password"] as const).map(field => <label key={field} className="field-label">{field}<input type={field === "password" ? "password" : "text"} value={newUser[field]} onChange={e => setNewUser({ ...newUser, [field]: e.target.value })} className="input-control" required /></label>)}<label className="field-label">role<select value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })} className="input-control"><option value="guard_entrance">Entrance guard</option><option value="guard_exit">Exit guard</option><option value="admin">Admin</option></select></label><button className="primary-button w-full">Create user</button></form><div className="app-surface p-5"><h2 className="mb-4 text-xl font-black text-ink">Users</h2>{users.map(user => <div key={user.id} className="flex justify-between border-b border-slate-100 py-3"><span><b>{user.name}</b><br /><small className="text-slate-500">{user.username}</small></span><span className="text-xs font-bold uppercase text-blue-700">{user.role}</span></div>)}</div></section></div></Protected>;
+  async function createUser(event: React.FormEvent) {
+    event.preventDefault();
+    try {
+      const result = await apiFetch<{ user: User }>("/users", { method: "POST", body: JSON.stringify(newUser) });
+      setUsers([...users, result.user]);
+      setNewUser({ name: "", username: "", password: "", role: "guard_entrance" });
+      setShowPassword(false);
+      setMessage("User created.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not create user.");
+    }
+  }
+  return (
+    <Protected roles={["admin"]}>
+      <div className="space-y-6">
+        <div><p className="text-sm font-semibold text-slate-500">Configure pricing and staff access.</p><h1 className="page-title">Settings</h1></div>
+        {message && <p className="rounded-xl bg-emerald-50 p-3 font-semibold text-emerald-700">{message}</p>}
+        {error && <p className="rounded-xl bg-red-50 p-3 font-semibold text-red-700">{error}</p>}
+        <div className="grid gap-5 md:grid-cols-3">
+          {rates.map(rate => (
+            <form key={rate.vehicle_type} onSubmit={e => { e.preventDefault(); save(rate); }} className="app-surface p-5">
+              <h2 className="mb-4 text-xl font-black text-ink">{rate.vehicle_type} Rates</h2>
+              {rateFields.map(field => (
+                <label key={field} className="field-label text-xs uppercase">{field.replaceAll("_", " ")}
+                  <input type="number" step="0.01" value={rate[field]} onChange={e => setRates(rates.map(item => item.id === rate.id ? { ...item, [field]: Number(e.target.value) } : item))} className="input-control" />
+                </label>
+              ))}
+              <button className="primary-button w-full">Save rates</button>
+            </form>
+          ))}
+        </div>
+        <section className="grid gap-5 lg:grid-cols-2">
+          <form onSubmit={createUser} className="app-surface p-5">
+            <h2 className="mb-4 text-xl font-black text-ink">Add User</h2>
+            <label className="field-label">Full name
+              <input
+                value={newUser.name}
+                onChange={e => {
+                  const name = e.target.value;
+                  setNewUser({ ...newUser, name, username: generateUsername(name) });
+                }}
+                className="input-control"
+                required
+              />
+            </label>
+            <label className="field-label">Username
+              <input value={newUser.username} readOnly className="input-control bg-slate-100 text-slate-600" required />
+            </label>
+            <label className="field-label">Password
+              <div className="relative">
+                <input type={showPassword ? "text" : "password"} value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} className="input-control pr-20" required minLength={8} />
+                <button type="button" onClick={() => setShowPassword(value => !value)} className="absolute right-2 top-1/2 min-h-10 -translate-y-1/2 rounded-lg px-3 text-xs font-black text-blue-700 hover:bg-blue-50" aria-label={showPassword ? "Hide password" : "Show password"}>
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+            </label>
+            <label className="field-label">Role
+              <select value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })} className="input-control">
+                <option value="guard_entrance">Entrance guard</option>
+                <option value="guard_exit">Exit guard</option>
+              </select>
+            </label>
+            <button className="primary-button w-full">Create user</button>
+          </form>
+          <div className="app-surface p-5">
+            <h2 className="mb-4 text-xl font-black text-ink">Users</h2>
+            {users.map(user => (
+              <div key={user.id} className="flex justify-between border-b border-slate-100 py-3">
+                <span><b>{user.name}</b><br /><small className="text-slate-500">{user.username}</small></span>
+                <span className="text-xs font-bold uppercase text-blue-700">{user.role}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    </Protected>
+  );
 }

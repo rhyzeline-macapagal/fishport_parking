@@ -5,6 +5,12 @@ export type User = {
   role: "admin" | "guard_entrance" | "guard_exit";
 };
 
+export type StaffRef = {
+  id: number;
+  name: string;
+  username: string;
+} | null;
+
 export type Ticket = {
   id: number;
   card_id: number | null;
@@ -16,6 +22,8 @@ export type Ticket = {
   status: "active" | "paid" | "lost";
   amount_due: number;
   amount_paid: number | null;
+  entrance_guard: StaffRef;
+  exit_guard: StaffRef;
 };
 
 export type Card = {

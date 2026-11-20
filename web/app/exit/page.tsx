@@ -5,6 +5,7 @@ import { apiFetch, Billing, Ticket, formatDate } from "../../lib/api";
 import { Protected } from "../../components/Protected";
 import { QrScanner } from "../../components/QrScanner";
 import { TicketCard } from "../../components/TicketCard";
+import { StaffBadge } from "../../components/StaffBadge";
 
 export default function ExitPage() {
   const [cardCode, setCardCode] = useState("");
@@ -83,13 +84,15 @@ export default function ExitPage() {
       </section>}
       {ticket && ticket.status === "paid" ? <div className="mx-auto w-full max-w-md space-y-4"><TicketCard ticket={ticket} receipt /><button type="button" onClick={startNextTransaction} className="guard-action bg-blue-600 text-lg text-white">＋ Scan next card</button></div> : ticket && billing ? <section className="app-surface p-5 sm:p-7">
         <h2 className="mb-5 text-2xl font-black text-ink">Billing summary</h2>
-        <dl className="grid grid-cols-2 gap-4 text-sm">
+        <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
           <div><dt className="text-slate-500">Card</dt><dd className="font-bold">{ticket.card_code}</dd></div>
           <div><dt className="text-slate-500">Plate</dt><dd className="font-bold">{ticket.plate_no}</dd></div>
           <div><dt className="text-slate-500">Vehicle</dt><dd className="font-bold">{ticket.vehicle_type}</dd></div>
           <div><dt className="text-slate-500">Entry</dt><dd className="font-bold">{formatDate(ticket.entry_time)}</dd></div>
           <div><dt className="text-slate-500">Exit</dt><dd className="font-bold">{formatDate(exitTime)}</dd></div>
           <div><dt className="text-slate-500">Duration</dt><dd className="font-bold">{billing.duration_minutes ? `${Math.floor(billing.duration_minutes / 60)}h ${billing.duration_minutes % 60}m` : "—"}</dd></div>
+          <div className="min-w-0 break-words"><dt className="text-slate-500">Entrance Guard</dt><dd><StaffBadge staff={ticket.entrance_guard} /></dd></div>
+          {ticket.status === "paid" && <div className="min-w-0 break-words"><dt className="text-slate-500">Exit Guard</dt><dd><StaffBadge staff={ticket.exit_guard} /></dd></div>}
         </dl>
         <p className="my-6 rounded-xl bg-slate-100 p-4 text-center text-sm font-bold">{billing.computation}</p>
         <p className="text-center text-5xl font-black text-ink">₱{billing.total.toFixed(2)}</p>
