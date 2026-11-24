@@ -54,14 +54,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {links.map(([href, label]) => <Link key={href} href={href} className={`whitespace-nowrap rounded-lg px-3 py-2 text-sm font-bold ${pathname === href ? "bg-accent text-ink" : "bg-slate-100 text-slate-600"}`}>{label}</Link>)}
           </nav>}
         </header>
-        <main className="mx-auto max-w-7xl px-4 py-5 pb-24 sm:py-7 sm:pb-7 lg:px-8 lg:pb-7">{children}</main>
+        <main className="mx-auto max-w-7xl px-4 py-3 pb-5 sm:py-7 sm:pb-7 lg:px-8 lg:pb-7">{children}</main>
         {isAdmin && <nav className="no-print safe-bottom fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t border-slate-200 bg-white/95 px-1 pt-1 shadow-[0_-8px_24px_rgba(15,23,42,.08)] backdrop-blur lg:hidden">
           {links.map(([href, label]) => <Link key={href} href={href} className={`min-h-14 rounded-xl px-1 py-2 text-center text-[10px] font-black leading-tight ${pathname === href ? "bg-accent text-ink" : "text-slate-500"}`}>
             {label}
           </Link>)}
-        </nav>}
-        {!isAdmin && <nav className="no-print safe-bottom fixed inset-x-0 bottom-0 z-20 grid grid-cols-2 border-t border-slate-200 bg-white/95 px-2 pt-2 shadow-[0_-8px_24px_rgba(15,23,42,.08)] backdrop-blur sm:hidden">
-          {links.map(([href, label]) => <Link key={href} href={href} className={`rounded-xl px-2 py-3 text-center text-xs font-black ${pathname === href ? "bg-accent text-ink" : "text-slate-500"}`}>{label}</Link>)}
         </nav>}
       </div>
       {logoutOpen && <div className="no-print fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="logout-title">
