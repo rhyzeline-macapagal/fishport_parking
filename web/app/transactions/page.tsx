@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { apiFetch, formatDate, StaffRef } from "../../lib/api";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { apiFetch, formatDate, StaffRef, vehicleLabel } from "../../lib/api";
 import { Protected } from "../../components/Protected";
 import { StaffBadge } from "../../components/StaffBadge";
 
@@ -10,6 +10,9 @@ type Transaction = {
   card_code: string | null;
   plate_no: string;
   vehicle_type: string;
+  ticket_type: "regular" | "vip";
+  vip_name: string | null;
+  vip_purpose: string | null;
   entry_time: string;
   exit_time: string | null;
   status: "active" | "paid" | "lost";
@@ -35,9 +38,9 @@ type TransactionSummary = {
 
 export default function TransactionsPage() {
   const [filters, setFilters] = useState(() => {
-    if (typeof window === "undefined") return { search: "", status: "", date: "", guardId: "" };
+    if (typeof window === "undefined") return { search: "", status: "", ticketType: "", date: "", guardId: "" };
     const params = new URLSearchParams(window.location.search);
-    return { search: params.get("search") || "", status: "", date: "", guardId: params.get("guard_id") || "" };
+    return { search: params.get("search") || "", status: "", ticketType: "", date: "", guardId: params.get("guard_id") || "" };
   });
   const [rows, setRows] = useState<Transaction[]>([]);
   const [summary, setSummary] = useState<TransactionSummary | null>(null);
@@ -46,13 +49,14 @@ export default function TransactionsPage() {
   const [loading, setLoading] = useState(false);
   const [sort, setSort] = useState<{ key: SortKey; direction: "asc" | "desc" }>({ key: "entry", direction: "desc" });
 
-  async function search() {
+  const search = useCallback(async () => {
     setError("");
     setLoading(true);
     try {
       const query = new URLSearchParams();
       if (filters.search) query.set("search", filters.search);
       if (filters.status) query.set("status", filters.status);
+      if (filters.ticketType) query.set("ticket_type", filters.ticketType);
       if (filters.date) query.set("date", filters.date);
       if (filters.guardId) query.set("guard_id", filters.guardId);
       const result = await apiFetch<{ transactions: Transaction[]; summary?: TransactionSummary }>(`/transactions?${query}`);
@@ -65,7 +69,7 @@ export default function TransactionsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [filters]);
 
   useEffect(() => {
     apiFetch<{ users: GuardUser[] }>("/users")
@@ -78,14 +82,17 @@ export default function TransactionsPage() {
       void search();
     }, 300);
     return () => window.clearTimeout(timeout);
-  }, [filters]);
+  }, [search]);
 
   function exportCsv() {
-    const header = "Card,Plate,Vehicle,Entry,Exit,Status,Amount,Entrance Guard,Entrance Username,Exit Guard,Exit Username\n";
+    const header = "Card,Type,Plate,Vehicle,VIP Name,VIP Purpose,Entry,Exit,Status,Amount,Entrance Guard,Entrance Username,Exit Guard,Exit Username\n";
     const csv = header + rows.map(row => [
       row.card_code || "",
+      row.ticket_type,
       row.plate_no,
-      row.vehicle_type,
+      row.vehicle_type ? vehicleLabel(row.vehicle_type) : "",
+      row.vip_name || "",
+      row.vip_purpose || "",
       formatDate(row.entry_time),
       formatDate(row.exit_time),
       row.status,
@@ -140,10 +147,13 @@ export default function TransactionsPage() {
           <h1 className="page-title">Transactions</h1>
         </div>
         <section className="app-surface p-4 sm:p-5">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
             <input aria-label="Universal search" placeholder="Search card, plate, guard, vehicle, status..." value={filters.search} onChange={e => setFilters({ ...filters, search: e.target.value })} className="input-control mt-0" />
             <select aria-label="Transaction status" value={filters.status} onChange={e => setFilters({ ...filters, status: e.target.value })} className="input-control mt-0">
               <option value="">All statuses</option><option>active</option><option>paid</option><option>lost</option>
+            </select>
+            <select aria-label="Transaction type" value={filters.ticketType} onChange={e => setFilters({ ...filters, ticketType: e.target.value })} className="input-control mt-0">
+              <option value="">All types</option><option value="regular">Regular</option><option value="vip">VIP</option>
             </select>
             <input aria-label="Transaction date" type="date" value={filters.date} onChange={e => setFilters({ ...filters, date: e.target.value })} className="input-control mt-0" />
             <select aria-label="Guard filter" value={filters.guardId} onChange={e => setFilters({ ...filters, guardId: e.target.value })} className="input-control mt-0">
@@ -174,9 +184,12 @@ export default function TransactionsPage() {
                     <article key={row.id} className="rounded-2xl border border-slate-200/80 bg-white/70 p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0"><p className="break-words font-mono font-bold">{row.card_code || "—"}</p><p className="break-words text-lg font-black text-ink">{row.plate_no}</p></div>
-                        <span className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-black uppercase ${row.status === "paid" ? "bg-emerald-100 text-emerald-700" : row.status === "lost" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}>{row.status}</span>
+                        <div className="flex shrink-0 flex-col items-end gap-1"><span className={`rounded-full px-3 py-1.5 text-xs font-black ${row.ticket_type === "vip" ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-600"}`}>{row.ticket_type === "vip" ? "VIP" : "Regular"}</span><span className={`rounded-full px-3 py-1.5 text-xs font-black uppercase ${row.status === "paid" ? "bg-emerald-100 text-emerald-700" : row.status === "lost" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}>{row.status}</span></div>
                       </div>
                       <dl className="mt-4 grid grid-cols-1 gap-3 text-sm">
+                        {row.ticket_type === "vip" && <div><dt className="text-slate-500">VIP Name</dt><dd className="font-bold">{row.vip_name || "—"}</dd></div>}
+                        {row.ticket_type === "vip" && <div><dt className="text-slate-500">Purpose</dt><dd className="font-bold">{row.vip_purpose || "—"}</dd></div>}
+                        {row.vehicle_type && <div><dt className="text-slate-500">Vehicle</dt><dd className="font-bold">{vehicleLabel(row.vehicle_type)}</dd></div>}
                         <div><dt className="text-slate-500">Entry</dt><dd className="break-words font-semibold">{formatDate(row.entry_time)}</dd></div>
                         <div><dt className="text-slate-500">Exit</dt><dd className="break-words font-semibold">{formatDate(row.exit_time)}</dd></div>
                         <div><dt className="text-slate-500">Amount</dt><dd className="font-black text-blue-700">₱{Number(row.amount_paid ?? row.amount_due).toFixed(2)}</dd></div>
@@ -191,6 +204,7 @@ export default function TransactionsPage() {
                     <thead className="sticky top-0 z-10 bg-slate-100/95 text-xs font-black uppercase text-slate-500">
                       <tr>
                         <th className="border-b border-slate-200/80 p-2">{sortHeader("card", "Card")}</th>
+                        <th className="border-b border-slate-200/80 p-2">Type</th>
                         <th className="border-b border-slate-200/80 p-2">{sortHeader("plate", "Plate")}</th>
                         <th className="border-b border-slate-200/80 p-2">{sortHeader("entry", "Entry")}</th>
                         <th className="border-b border-slate-200/80 p-2">{sortHeader("exit", "Exit")}</th>
@@ -204,6 +218,7 @@ export default function TransactionsPage() {
                       {sortedRows.map(row => (
                         <tr key={row.id} className="group transition hover:bg-white/75">
                           <td className="border-b border-slate-100 px-4 py-3 font-mono font-bold text-slate-700">{row.card_code || "—"}</td>
+                          <td className="border-b border-slate-100 px-4 py-3"><span className={`rounded-full px-3 py-1.5 text-xs font-black ${row.ticket_type === "vip" ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-600"}`}>{row.ticket_type === "vip" ? "VIP" : "Regular"}</span></td>
                           <td className="border-b border-slate-100 px-4 py-3 font-bold text-ink">{row.plate_no}</td>
                           <td className="border-b border-slate-100 px-4 py-3 text-slate-600">{formatDate(row.entry_time)}</td>
                           <td className="border-b border-slate-100 px-4 py-3 text-slate-600">{formatDate(row.exit_time)}</td>

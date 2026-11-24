@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, formatDate } from "../../lib/api";
+import { apiFetch, formatDate, vehicleLabel } from "../../lib/api";
 import { Protected } from "../../components/Protected";
 import { StaffBadge } from "../../components/StaffBadge";
 import { Ticket } from "../../lib/api";
 
-type Stats = { vehicles_inside: number; today_revenue: number; total_vehicles_today: number; total_cards: number; available_cards: number; paid_today: number; lost_today: number };
+type Stats = { vehicles_inside: number; vip_vehicles_inside: number; vip_visits_period: number; today_revenue: number; total_vehicles_today: number; total_cards: number; available_cards: number; paid_today: number; lost_today: number };
 type RankedValue = { value: string; count: number };
 type RankedGuard = { id: number; name: string; username: string; count: number };
 type Insights = {
@@ -28,7 +28,7 @@ function RankingCard({ title, items, hrefValue }: { title: string; items: Ranked
           {items.map((item, index) => (
             <li key={item.value}>
               <a href={hrefValue(item.value)} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2 hover:bg-slate-100">
-                <span className="min-w-0 break-words text-sm font-bold text-slate-700"><span className="mr-2 text-slate-400">{index + 1}</span>{item.value}</span>
+                <span className="min-w-0 break-words text-sm font-bold text-slate-700"><span className="mr-2 text-slate-400">{index + 1}</span>{title === "Top Vehicle Types" ? vehicleLabel(item.value) : item.value}</span>
                 <span className="shrink-0 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-black text-blue-700">{item.count}</span>
               </a>
             </li>
@@ -109,6 +109,8 @@ export default function DashboardPage() {
 
   const metrics = [
     ["🚗", "Active Vehicles", stats?.vehicles_inside ?? "—", "text-blue-600"],
+    ["VIP", "VIP Vehicles Inside", stats?.vip_vehicles_inside ?? "—", "text-amber-600"],
+    ["VIP", "VIP Visits (Period)", stats?.vip_visits_period ?? "—", "text-amber-600"],
     ["▣", "Total Cards", stats?.total_cards ?? "—", "text-emerald-600"],
     ["₱", "Period Collection", stats ? `₱${stats.today_revenue.toFixed(2)}` : "—", "text-amber-500"],
     ["▤", "Period Transactions", stats?.total_vehicles_today ?? "—", "text-violet-600"],
@@ -166,11 +168,11 @@ export default function DashboardPage() {
         {recent.length === 0 ? <p className="py-12 text-center text-sm font-semibold text-slate-500">No transactions for this period.</p> : <>
           <div className="space-y-3 md:hidden">
             {recent.map(row => <article key={row.id} className="rounded-2xl border border-slate-200/80 bg-white/70 p-4">
-              <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="break-words text-lg font-black text-ink">{row.plate_no}</p><p className="text-sm text-slate-500">{row.vehicle_type}</p></div><span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${row.status === "paid" ? "bg-emerald-100 text-emerald-700" : row.status === "lost" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}>{row.status}</span></div>
+              <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="break-words text-lg font-black text-ink">{row.plate_no}</p><p className="text-sm text-slate-500">{row.ticket_type === "vip" ? "VIP" : vehicleLabel(row.vehicle_type)}</p></div><span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${row.status === "paid" ? "bg-emerald-100 text-emerald-700" : row.status === "lost" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}>{row.status}</span></div>
               <dl className="mt-3 grid grid-cols-1 gap-3 text-sm"><div><dt className="text-slate-500">Entry</dt><dd className="break-words font-semibold">{formatDate(row.entry_time)}</dd></div><div><dt className="text-slate-500">Exit</dt><dd className="break-words font-semibold">{formatDate(row.exit_time)}</dd></div><div><dt className="text-slate-500">Amount</dt><dd className="font-black text-blue-600">₱{Number(row.amount_paid || row.amount_due || 0).toFixed(2)}</dd></div><div><dt className="text-slate-500">Entrance Guard</dt><dd><StaffBadge staff={row.entrance_guard} /></dd></div><div><dt className="text-slate-500">Exit Guard</dt><dd><StaffBadge staff={row.exit_guard} /></dd></div></dl>
             </article>)}
           </div>
-          <div className="hidden overflow-x-auto md:block"><table className="w-full min-w-[980px] text-left text-sm"><thead className="sticky top-0 bg-blue-50 text-xs uppercase text-slate-500"><tr><th className="p-3">Time</th><th className="p-3">Plate No.</th><th className="p-3">Vehicle Type</th><th className="p-3">Status</th><th className="p-3">Amount</th><th className="p-3">Entrance Guard</th><th className="p-3">Exit Guard</th></tr></thead><tbody>{recent.map(row => <tr key={String(row.id)} className="border-b border-slate-100"><td className="p-3">{formatDate(row.entry_time)}</td><td className="p-3 font-bold">{row.plate_no}</td><td className="p-3">{row.vehicle_type}</td><td className="p-3"><span className={`rounded-full px-3 py-1 text-xs font-bold ${row.status === "paid" ? "bg-emerald-100 text-emerald-700" : row.status === "lost" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}>{row.status}</span></td><td className="p-3 font-bold text-blue-600">₱{Number(row.amount_paid || row.amount_due || 0).toFixed(2)}</td><td className="max-w-44 p-3"><StaffBadge staff={row.entrance_guard} /></td><td className="max-w-44 p-3"><StaffBadge staff={row.exit_guard} /></td></tr>)}</tbody></table></div>
+          <div className="hidden overflow-x-auto md:block"><table className="w-full min-w-[980px] text-left text-sm"><thead className="sticky top-0 bg-blue-50 text-xs uppercase text-slate-500"><tr><th className="p-3">Time</th><th className="p-3">Plate No.</th><th className="p-3">Vehicle Type</th><th className="p-3">Status</th><th className="p-3">Amount</th><th className="p-3">Entrance Guard</th><th className="p-3">Exit Guard</th></tr></thead><tbody>{recent.map(row => <tr key={String(row.id)} className="border-b border-slate-100"><td className="p-3">{formatDate(row.entry_time)}</td><td className="p-3 font-bold">{row.plate_no}</td>          <td className="p-3">{row.ticket_type === "vip" ? "VIP" : vehicleLabel(row.vehicle_type)}</td><td className="p-3"><span className={`rounded-full px-3 py-1 text-xs font-bold ${row.status === "paid" ? "bg-emerald-100 text-emerald-700" : row.status === "lost" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}>{row.status}</span></td><td className="p-3 font-bold text-blue-600">₱{Number(row.amount_paid || row.amount_due || 0).toFixed(2)}</td><td className="max-w-44 p-3"><StaffBadge staff={row.entrance_guard} /></td><td className="max-w-44 p-3"><StaffBadge staff={row.exit_guard} /></td></tr>)}</tbody></table></div>
         </>}
       </section>
       <section className="app-surface p-5"><div className="mb-5"><h2 className="text-xl font-black text-ink">Period Overview</h2></div><div className="grid grid-cols-2 gap-3"><div className="rounded-xl bg-emerald-50 p-4"><p className="text-xs font-bold uppercase text-emerald-700">Available cards</p><p className="mt-1 text-2xl font-black text-emerald-900">{stats?.available_cards ?? "—"}</p></div><div className="rounded-xl bg-blue-50 p-4"><p className="text-xs font-bold uppercase text-blue-700">Paid exits</p><p className="mt-1 text-2xl font-black text-blue-900">{stats?.paid_today ?? "—"}</p></div><div className="col-span-2 rounded-xl bg-red-50 p-4"><p className="text-xs font-bold uppercase text-red-700">Lost tickets</p><p className="mt-1 text-2xl font-black text-red-900">{stats?.lost_today ?? "—"}</p></div></div></section>
