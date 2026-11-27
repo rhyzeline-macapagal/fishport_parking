@@ -99,6 +99,21 @@ export function formatDate(value: string | null): string {
   }).format(date);
 }
 
+export function formatDateOnly(value: string | null): string {
+  if (!value) return "—";
+  const isoValue = value.includes("T") || value.includes("Z")
+    ? value
+    : value.replace(" ", "T") + "+08:00";
+  const date = new Date(isoValue);
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  }).format(date);
+}
+
 export function formatTime(value: string | null): string {
   if (!value) return "—";
   const isoValue = value.includes("T") || value.includes("Z")
