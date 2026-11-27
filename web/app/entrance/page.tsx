@@ -116,7 +116,7 @@ export default function EntrancePage() {
           <button disabled={loading} className="guard-action mt-4 bg-ink text-lg text-white">{loading ? "Assigning…" : "Confirm entry"}</button>
         </>}
       </form>}
-      {ticket && <div className="mx-auto w-full max-w-md space-y-4"><TicketCard ticket={ticket} /><button type="button" onClick={startAnotherTransaction} className="guard-action bg-blue-600 text-lg text-white">＋ Scan another QR</button></div>}
+      {ticket && <div className="mx-auto w-full max-w-md space-y-4"><TicketCard ticket={ticket} /><button type="button" onClick={startAnotherTransaction} className="guard-action bg-blue-600 text-lg text-white sm:w-auto">＋ Scan another QR</button></div>}
     </div>
   </Protected>;
 }

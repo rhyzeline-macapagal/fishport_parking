@@ -98,3 +98,18 @@ export function formatDate(value: string | null): string {
     hour12: true,
   }).format(date);
 }
+
+export function formatTime(value: string | null): string {
+  if (!value) return "—";
+  const isoValue = value.includes("T") || value.includes("Z")
+    ? value
+    : value.replace(" ", "T") + "+08:00";
+  const date = new Date(isoValue);
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
+}
